@@ -1,0 +1,332 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/proofprotocol/PP-SPEC-091-PROOF-OF-PERSISTENCE/schemas/persistence-claim.schema.json",
+  "title": "Proof of Persistence records (PP-SPEC-091)",
+  "description": "Claim Declaration and Claim Record under PP-SPEC-091 Section 9. Every record is a PP-SPEC-077 Section 21 record; Record IDs are SHA-256(\"POPS-1:record\" || RFC 8785 canonical form) with signatures, endorsements, proofregister_uri, and registry_receipt excluded.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/claim_declaration"
+    },
+    {
+      "$ref": "#/$defs/claim_record"
+    }
+  ],
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "record_id": {
+      "$ref": "#/$defs/hash"
+    },
+    "pulse": {
+      "type": "object",
+      "required": [
+        "source",
+        "index",
+        "output"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "format": "uri"
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "output": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "party": {
+      "type": "object",
+      "required": [
+        "id",
+        "disclosed_interests"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "disclosed_interests": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "subject": {
+      "type": "object",
+      "required": [
+        "dut_fingerprint"
+      ],
+      "properties": {
+        "dut_fingerprint": {
+          "$ref": "#/$defs/hash"
+        },
+        "cut_fingerprint": {
+          "$ref": "#/$defs/hash"
+        },
+        "aut_fingerprint": {
+          "$ref": "#/$defs/hash"
+        }
+      }
+    },
+    "envelope": {
+      "type": "object",
+      "properties": {
+        "disclosure": {
+          "enum": [
+            "public",
+            "holder_only",
+            "embargoed",
+            "sealed"
+          ]
+        },
+        "proofregister_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "registry_receipt": {
+          "$ref": "#/$defs/hash"
+        },
+        "signatures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "role",
+              "key",
+              "sig"
+            ],
+            "properties": {
+              "role": {
+                "enum": [
+                  "declarant",
+                  "resolver",
+                  "holder",
+                  "registry",
+                  "endorser"
+                ]
+              },
+              "key": {
+                "type": "string"
+              },
+              "sig": {
+                "type": "string",
+                "pattern": "^[0-9a-f]+$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "persistence_span": {
+          "type": "object",
+          "properties": {
+            "start": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "end": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "epochs_valid": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "silent_drift_events": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fingerprint_changes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "claim_declaration": {
+      "type": "object",
+      "required": [
+        "record_type",
+        "spec",
+        "spec_version",
+        "claim",
+        "subject",
+        "declarant",
+        "pulse",
+        "validity",
+        "limits",
+        "publication_commitment"
+      ],
+      "properties": {
+        "record_type": {
+          "const": "claim_declaration"
+        },
+        "spec": {
+          "const": "PP-SPEC-091"
+        },
+        "spec_version": {
+          "type": "string"
+        },
+        "claim": {
+          "const": "Proof of Persistence"
+        },
+        "subject": {
+          "$ref": "#/$defs/subject"
+        },
+        "declarant": {
+          "$ref": "#/$defs/party"
+        },
+        "funding_tier": {
+          "type": "string"
+        },
+        "sponsor": {
+          "type": "string"
+        },
+        "pulse": {
+          "$ref": "#/$defs/pulse"
+        },
+        "validity": {
+          "type": "object",
+          "required": [
+            "start",
+            "end"
+          ],
+          "properties": {
+            "start": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "end": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "scope": {
+          "type": "object",
+          "description": "Declared scope, Section 4.2"
+        },
+        "limits": {
+          "type": "object",
+          "description": "Every limit, minimum and tolerance, fixed at registration (Section 4.3)"
+        },
+        "publication_commitment": {
+          "const": true
+        },
+        "envelope": {
+          "$ref": "#/$defs/envelope"
+        }
+      }
+    },
+    "claim_record": {
+      "type": "object",
+      "required": [
+        "record_type",
+        "spec",
+        "spec_version",
+        "claim",
+        "declaration",
+        "basis_records",
+        "determination",
+        "resolver",
+        "pulse",
+        "scope",
+        "validity",
+        "result"
+      ],
+      "properties": {
+        "record_type": {
+          "const": "claim_record"
+        },
+        "spec": {
+          "const": "PP-SPEC-091"
+        },
+        "spec_version": {
+          "type": "string"
+        },
+        "claim": {
+          "const": "Proof of Persistence"
+        },
+        "declaration": {
+          "$ref": "#/$defs/record_id"
+        },
+        "basis_records": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/record_id"
+          }
+        },
+        "determination": {
+          "enum": [
+            "proven",
+            "refuted",
+            "insufficient"
+          ]
+        },
+        "resolver": {
+          "$ref": "#/$defs/party"
+        },
+        "pulse": {
+          "$ref": "#/$defs/pulse"
+        },
+        "scope": {
+          "type": "object"
+        },
+        "validity": {
+          "type": "object",
+          "properties": {
+            "start": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "end": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expired": {
+              "type": "boolean"
+            },
+            "expiry_reason": {
+              "enum": [
+                "period_end",
+                "fingerprint_change",
+                "basis_revoked",
+                null
+              ]
+            }
+          }
+        },
+        "reproof_status": {
+          "type": "string",
+          "description": "Optional, PP-SPEC-081 status of the basis records (Section 7.4)"
+        },
+        "result": {
+          "$ref": "#/$defs/result"
+        },
+        "envelope": {
+          "$ref": "#/$defs/envelope"
+        }
+      }
+    }
+  }
+}
